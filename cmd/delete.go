@@ -7,16 +7,17 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/spf13/cobra"
 )
 
-// completeCmd represents the complete command
-var completeCmd = &cobra.Command{
-	Use:   "complete",
-	Short: "Marks a task as complete",
-	Long:  `Marks a task as complete. It takes a task ID as an argument.`,
-	Args:  cobra.ExactArgs(1),
+// deleteCmd represents the delete command
+var deleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a task by its ID",
+	Long: `Delete a task by its ID. It takes a task ID as an argument.
+	This command will remove the task from the CSV file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		file, err := os.OpenFile("tasks.csv", os.O_RDWR, 0644)
 		if err != nil {
@@ -41,11 +42,17 @@ var completeCmd = &cobra.Command{
 				continue
 			}
 			if row[0] == taskID {
-				// Mark the task as complete
-				row[3] = "true"
+				data = slices.Delete(data, i, i+1)
 				found = true
 				break
 			}
+		}
+
+		for i, row := range data {
+			if i == 0 {
+				continue
+			}
+			row[0] = fmt.Sprintf("%d", i)
 		}
 
 		// If task not found, print a message
@@ -76,20 +83,20 @@ var completeCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("Task with ID %s marked as complete\n", taskID)
+		fmt.Printf("Task with ID %s deleted\n", taskID)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(completeCmd)
+	rootCmd.AddCommand(deleteCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// completeCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// deleteCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// completeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
